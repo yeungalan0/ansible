@@ -1,0 +1,24 @@
+---
+- name: install necessary packages
+  package:
+    name: [
+    "emacs",
+    "terminator",
+    "git",
+    "fedora-workstation-repositories",
+    "snapd"
+    ]
+    state: present
+
+- name: install chrome repos
+  dnf:
+    name: google-chrome-stable
+    enablerepo: google-chrome
+
+- name: install podman and intellij
+  snap:
+    name: "{{ item.name }}"
+    classic: "{{ item.classic }}"
+  loop:
+    - { name: "intellij-idea-ultimate", classic: True }
+    - { name: "postman", classic: False}
