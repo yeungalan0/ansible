@@ -6,7 +6,8 @@
     "terminator",
     "git",
     "fedora-workstation-repositories",
-    "snapd"
+    "snapd",
+    "firefox"
     ]
     state: present
 
@@ -22,3 +23,19 @@
   loop:
     - { name: "intellij-idea-ultimate", classic: True }
     - { name: "postman", classic: False}
+
+- name: check if AWS CLI is already installed
+  stat:
+    path: /usr/local/aws-cli
+  register: aws_cli
+
+- name: download latest AWS CLI
+  unarchive:
+    src: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+    dest: /tmp
+    remote_src: yes
+  when: not aws_cli.stat.exists
+
+- name: install the AWS CLI
+  command: /tmp/aws/install
+  when: not aws_cli.stat.exists
