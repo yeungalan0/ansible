@@ -1,2 +1,5 @@
+[dev:vars]
+user=<USERID>
+
 [dev]
 <DEV_HOST_TO_DEPLOY_TO>

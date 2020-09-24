@@ -8,5 +8,7 @@ distribution
 1. Copy the hosts_example file to the `hosts` file you will use
    * `cp hosts_example hosts`
 1. Properly configure your `hosts` file
+1. Install necessary requirements
+   * `ansible-galaxy collection install -r requirements.yml`
 1. Run the ansible command
    * `ansible-playbook -i hosts site.yml`

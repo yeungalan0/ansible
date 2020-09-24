@@ -7,7 +7,10 @@
     "git",
     "fedora-workstation-repositories",
     "snapd",
-    "firefox"
+    "firefox",
+    "npm",
+    "pipenv",
+    "dnf-plugins-core"
     ]
     state: present
 
@@ -39,3 +42,30 @@
 - name: install the AWS CLI
   command: /tmp/aws/install
   when: not aws_cli.stat.exists
+
+- name: install serverless framework CLI
+  community.general.npm:
+    name: serverless
+    global: yes
+
+- name: install the docker repository
+  command: sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+  args:
+    creates: /etc/yum.repos.d/docker-ce.repo
+
+- name: install docker packages
+  package:
+    name: [ "docker-ce", "docker-ce-cli", "containerd.io" ]
+    state: installed
+
+- name: start and enable docker
+  service:
+    name: docker
+    state: started
+    enabled: True
+
+- name: add user to docker group
+  user:
+    name: "{{ user }}"
+    groups: docker
+    append: True
