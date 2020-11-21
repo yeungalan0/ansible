@@ -1,0 +1,19 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+      {
+          "label": "ansible run local",
+          "type": "shell",
+          "command": "sudo ansible-playbook -i hosts site.yml -c local",
+          "problemMatcher": []
+      },
+      {
+        "label": "ansible install requirements",
+        "type": "shell",
+        "command": "sudo ansible-galaxy collection install -r requirements.yml",
+        "problemMatcher": []
+    }
+  ]
+}

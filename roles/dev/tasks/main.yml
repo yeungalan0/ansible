@@ -27,6 +27,7 @@
     - { name: "intellij-idea-ultimate", classic: True }
     - { name: "postman", classic: False }
     - { name: "code", classic: True }
+    - { name: "kotlin", classic: True }
 
 - name: check if AWS CLI is already installed
   stat:
