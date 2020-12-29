@@ -84,3 +84,12 @@
     url: https://github.com/docker/compose/releases/latest/download/docker-compose-Linux-x86_64
     dest: /usr/local/bin/docker-compose
     mode: '0755'
+
+- name: install bashrc
+  copy:
+    src: bashrc
+    dest: "/home/{{ user }}/.bashrc"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: 0644
+  tags: bashrc
