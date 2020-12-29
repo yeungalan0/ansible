@@ -87,9 +87,12 @@
 
 - name: install bashrc
   copy:
-    src: bashrc
-    dest: "/home/{{ user }}/.bashrc"
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
     owner: "{{ user }}"
     group: "{{ user }}"
     mode: 0644
-  tags: bashrc
+  loop:
+    - { src: "bashrc", dest: "/home/{{ user }}/.bashrc" }
+    - { src: "terminator_config", dest: "/home/{{ user }}/.config/terminator/config" }
+  tags: configs
