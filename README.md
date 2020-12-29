@@ -11,4 +11,4 @@ distribution
 1. Install necessary requirements
    * `sudo ansible-galaxy collection install -r requirements.yml`
 1. Run the ansible command
-   * `sudo ansible-playbook -i hosts site.yml`
+   * `sudo ansible-playbook -i hosts site.yml [-b -k -K]`
