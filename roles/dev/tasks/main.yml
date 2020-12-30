@@ -1,4 +1,9 @@
 ---
+- name: install and enable chrome repos
+  dnf:
+    name: google-chrome-stable
+    enablerepo: google-chrome
+
 - name: install necessary packages
   package:
     name: [
@@ -12,15 +17,11 @@
     "pipenv",
     "dnf-plugins-core",
     "gnome-tweaks",
-    "golang"
+    "golang",
+    "google-chrome-stable"
     ]
     state: present
   tags: packages
-
-- name: install chrome repos
-  dnf:
-    name: google-chrome-stable
-    enablerepo: google-chrome
 
 - name: create necessary symlinks
   file:
@@ -39,62 +40,60 @@
     - { name: "code", classic: True }
     - { name: "kotlin", classic: True }
 
-- name: check if AWS CLI is already installed
-  stat:
-    path: /usr/local/aws-cli
-  register: aws_cli
-
-- name: download latest AWS CLI
-  unarchive:
-    src: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
-    dest: /tmp
-    remote_src: yes
-  when: not aws_cli.stat.exists
-
-- name: install the AWS CLI
-  command: /tmp/aws/install
-  when: not aws_cli.stat.exists
-
 - name: install serverless framework CLI
   community.general.npm:
     name: serverless
     global: yes
 
-- name: install the docker repository
-  command: sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
-  args:
-    creates: /etc/yum.repos.d/docker-ce.repo
+- name: AWS CLI tasks
+  block:
+    - name: check if AWS CLI is already installed
+      stat:
+        path: /usr/local/aws-cli
+      register: aws_cli
 
-- name: install docker packages
-  package:
-    name: [ "docker-ce", "docker-ce-cli", "containerd.io" ]
-    state: installed
+    - name: download latest AWS CLI
+      unarchive:
+        src: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp
+        remote_src: yes
+      when: not aws_cli.stat.exists
 
-- name: start and enable docker
-  service:
-    name: docker
-    state: started
-    enabled: True
+    - name: install the AWS CLI
+      command: /tmp/aws/install
+      when: not aws_cli.stat.exists
+  tags: aws-cli
 
-- name: add user to docker group
-  user:
-    name: "{{ user }}"
-    groups: docker
-    append: True
+- name: install and configure docker
+  block:
+    - name: install the docker repository
+      command: sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+      args:
+        creates: /etc/yum.repos.d/docker-ce.repo
 
-- name: install docker-compose
-  get_url:
-    url: https://github.com/docker/compose/releases/latest/download/docker-compose-Linux-x86_64
-    dest: /usr/local/bin/docker-compose
-    mode: '0755'
+    - name: install docker packages
+      package:
+        name: [ "docker-ce", "docker-ce-cli", "containerd.io" ]
+        state: installed
 
-- name: ensure necessary directories are created
-  file:
-    path: "{{ item.path }}"
-    state: directory
-  loop:
-    - { path: "/usr/local/lib/systemd/resolved.conf.d" }
-  tags: configs
+    - name: start and enable docker
+      service:
+        name: docker
+        state: started
+        enabled: True
+
+    - name: add user to docker group
+      user:
+        name: "{{ user }}"
+        groups: docker
+        append: True
+
+    - name: install docker-compose
+      get_url:
+        url: https://github.com/docker/compose/releases/latest/download/docker-compose-Linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+  tags: docker
 
 - name: install config files
   copy:
@@ -107,36 +106,3 @@
     - { src: "bashrc", dest: "/home/{{ user }}/.bashrc" }
     - { src: "terminator_config", dest: "/home/{{ user }}/.config/terminator/config" }
   tags: configs
-
-# resolved_custom.conf.j2 is needed for annoying issue where disconnecting from VPN breaks local DNS routing
-- name: install config templates
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    owner: "root"
-    group: "root"
-    mode: "{{ item.mode }}"
-  loop:
-    - { src: "sudoers_custom.j2", dest: "/etc/sudoers.d/sudoers_custom", owner: "root", group: "root", mode: "0660" }
-    - { src: "resolved_custom.conf.j2", dest: "/usr/local/lib/systemd/resolved.conf.d/custom.conf", owner: "root", group: "root", mode: "0644" }
-    - { src: "emacs.j2", dest: "/home/{{ user }}/.emacs", owner: "{{ user }}", group: "{{ user }}", mode: "0644" }
-  tags: configs
-
-- name: check if VPN installed
-  stat:
-    path: /usr/bin/nordvpn
-  register: vpn
-  tags: vpn
-
-- name: download VPN script
-  get_url:
-    url: https://downloads.nordcdn.com/apps/linux/install.sh
-    dest: /tmp/install.sh
-    mode: '555'
-  when: vpn.stat.exists == False
-  tags: vpn
-
-- name: install VPN
-  command: /tmp/install.sh -n
-  when: vpn.stat.exists == False
-  tags: vpn

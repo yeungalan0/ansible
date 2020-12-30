@@ -1,4 +1,5 @@
 ---
 - hosts: dev
   roles:
+    - {role: personal, tags: personal}
     - dev
