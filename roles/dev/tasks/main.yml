@@ -10,9 +10,12 @@
     "firefox",
     "npm",
     "pipenv",
-    "dnf-plugins-core"
+    "dnf-plugins-core",
+    "gnome-tweaks",
+    "golang"
     ]
     state: present
+  tags: packages
 
 - name: install chrome repos
   dnf:
@@ -85,7 +88,15 @@
     dest: /usr/local/bin/docker-compose
     mode: '0755'
 
-- name: install bashrc
+- name: ensure necessary directories are created
+  file:
+    path: "{{ item.path }}"
+    state: directory
+  loop:
+    - { path: "/usr/local/lib/systemd/resolved.conf.d" }
+  tags: configs
+
+- name: install config files
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -96,3 +107,36 @@
     - { src: "bashrc", dest: "/home/{{ user }}/.bashrc" }
     - { src: "terminator_config", dest: "/home/{{ user }}/.config/terminator/config" }
   tags: configs
+
+# resolved_custom.conf.j2 is needed for annoying issue where disconnecting from VPN breaks local DNS routing
+- name: install config templates
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+    mode: "{{ item.mode }}"
+  loop:
+    - { src: "sudoers_custom.j2", dest: "/etc/sudoers.d/sudoers_custom", owner: "root", group: "root", mode: "0660" }
+    - { src: "resolved_custom.conf.j2", dest: "/usr/local/lib/systemd/resolved.conf.d/custom.conf", owner: "root", group: "root", mode: "0644" }
+    - { src: "emacs.j2", dest: "/home/{{ user }}/.emacs", owner: "{{ user }}", group: "{{ user }}", mode: "0644" }
+  tags: configs
+
+- name: check if VPN installed
+  stat:
+    path: /usr/bin/nordvpn
+  register: vpn
+  tags: vpn
+
+- name: download VPN script
+  get_url:
+    url: https://downloads.nordcdn.com/apps/linux/install.sh
+    dest: /tmp/install.sh
+    mode: '555'
+  when: vpn.stat.exists == False
+  tags: vpn
+
+- name: install VPN
+  command: /tmp/install.sh -n
+  when: vpn.stat.exists == False
+  tags: vpn

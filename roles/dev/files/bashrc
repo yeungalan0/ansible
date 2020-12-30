@@ -19,7 +19,12 @@ bind '"\e[A": history-search-backward'
 bind '"\e[B": history-search-forward'
 
 #============================================================
-#  ALIASES
+#  Exports
+#============================================================
+export AOC_GO_CONFIG_DIR=$HOME/git/misc/advent_of_code_2020/config
+
+#============================================================
+#  Aliases
 #============================================================
 
 alias sudo="sudo "
