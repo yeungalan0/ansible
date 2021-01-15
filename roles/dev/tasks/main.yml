@@ -39,6 +39,8 @@
     - { name: "postman", classic: False }
     - { name: "code", classic: True }
     - { name: "kotlin", classic: True }
+    - { name: "spotify", classic: False}
+  tags: snaps
 
 - name: install serverless framework CLI
   community.general.npm:

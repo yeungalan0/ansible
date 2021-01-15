@@ -2,4 +2,4 @@
 - hosts: dev
   roles:
     - {role: personal, tags: personal}
-    - dev
+    - {role: dev, tags: dev}
