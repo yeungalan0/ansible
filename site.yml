@@ -1,5 +1,10 @@
 ---
 - hosts: dev
   roles:
+    - {role: common, tags: common}
     - {role: personal, tags: personal}
     - {role: dev, tags: dev}
+
+- hosts: ansible
+  roles:
+    - {role: common, tags: common}

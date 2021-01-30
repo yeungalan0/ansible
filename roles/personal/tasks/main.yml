@@ -1,12 +1,4 @@
 ---
-- name: install necessary packages
-  package:
-    name: [
-    "autofs"
-    ]
-    state: present
-  tags: packages
-
 - name: install snap packages
   community.general.snap:
     name: "{{ item.name }}"
@@ -16,13 +8,11 @@
     - { name: "authy", classic: False, channel: "beta"}
   tags: snaps
 
-
 - name: ensure necessary directories are created
   file:
     path: "{{ item.path }}"
     state: directory
   loop:
-    - { path: "/cifs" }
     - { path: "/usr/local/lib/systemd/resolved.conf.d" }
   tags: configs
 
@@ -38,24 +28,9 @@
     - { src: "sudoers_custom.j2", dest: "/etc/sudoers.d/sudoers_custom", owner: "root", group: "root", mode: "0660" }
     - { src: "resolved_custom.conf.j2", dest: "/usr/local/lib/systemd/resolved.conf.d/custom.conf", owner: "root", group: "root", mode: "0644" }
     - { src: "emacs.j2", dest: "/home/{{ user }}/.emacs", owner: "{{ user }}", group: "{{ user }}", mode: "0644" }
-    - { src: "custom.autofs.j2", dest: "/etc/auto.master.d/custom.autofs", owner: "root", group: "root", mode: "0755" }
   notify:
-    - restart autofs
     - restart systemd-resolved
   tags: configs
-
-- name: create necessary symlinks
-  file:
-    src: "{{ share_path }}"
-    dest: "/home/{{ user }}/readyshare"
-    state: link
-    force: True
-
-- name: start and enable services
-  service:
-    name: autofs
-    state: started
-    enabled: True
 
 - name: VPN tasks
   block:
