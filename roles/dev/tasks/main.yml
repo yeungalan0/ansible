@@ -108,3 +108,14 @@
     - { src: "bashrc", dest: "/home/{{ user }}/.bashrc" }
     - { src: "terminator_config", dest: "/home/{{ user }}/.config/terminator/config" }
   tags: configs
+
+- name: install custom sysctl config
+  template:
+    src: 99-custom.conf.j2
+    dest: /etc/sysctl.d/99-custom.conf
+    owner: root
+    group: root
+    mode: 0644
+  tags: sysctl
+  notify:
+    - reload sysctl

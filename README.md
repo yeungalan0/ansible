@@ -9,6 +9,6 @@ distribution
    * `cp hosts_example hosts`
 1. Properly configure your `hosts` file
 1. Install necessary requirements
-   * `sudo ansible-galaxy collection install -r requirements.yml`
+   * `ansible-galaxy collection install -r requirements.yml`
 1. Run the ansible command
-   * `sudo ansible-playbook -i hosts site.yml [-b -k -K]`
+   * `ansible-playbook -i hosts site.yml [-b -k -K]`
