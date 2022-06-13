@@ -6,20 +6,19 @@
 
 - name: install necessary packages
   package:
-    name: [
-    "emacs",
-    "terminator",
-    "git",
-    "fedora-workstation-repositories",
-    "snapd",
-    "firefox",
-    "npm",
-    "pipenv",
-    "dnf-plugins-core",
-    "gnome-tweaks",
-    "golang",
-    "google-chrome-stable"
-    ]
+    name:
+      [
+        "terminator",
+        "git",
+        "fedora-workstation-repositories",
+        "snapd",
+        "firefox",
+        "npm",
+        "pipenv",
+        "dnf-plugins-core",
+        "gnome-tweaks",
+        "google-chrome-stable",
+      ]
     state: present
   tags: packages
 
@@ -39,13 +38,8 @@
     - { name: "postman", classic: False }
     - { name: "code", classic: True }
     - { name: "kotlin", classic: True }
-    - { name: "spotify", classic: False}
+    - { name: "spotify", classic: False }
   tags: snaps
-
-- name: install serverless framework CLI
-  community.general.npm:
-    name: serverless
-    global: yes
 
 - name: AWS CLI tasks
   block:
@@ -75,7 +69,7 @@
 
     - name: install docker packages
       package:
-        name: [ "docker-ce", "docker-ce-cli", "containerd.io" ]
+        name: ["docker-ce", "docker-ce-cli", "containerd.io"]
         state: installed
 
     - name: start and enable docker
@@ -86,7 +80,7 @@
 
     - name: add user to docker group
       user:
-        name: "{{ user }}"
+        name: "{{ my_user }}"
         groups: docker
         append: True
 
@@ -94,19 +88,22 @@
       get_url:
         url: https://github.com/docker/compose/releases/latest/download/docker-compose-Linux-x86_64
         dest: /usr/local/bin/docker-compose
-        mode: '0755'
+        mode: "0755"
   tags: docker
 
 - name: install config files
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
-    owner: "{{ user }}"
-    group: "{{ user }}"
+    owner: "{{ my_user }}"
+    group: "{{ my_user }}"
     mode: 0644
   loop:
-    - { src: "bashrc", dest: "/home/{{ user }}/.bashrc" }
-    - { src: "terminator_config", dest: "/home/{{ user }}/.config/terminator/config" }
+    - { src: "bashrc", dest: "/home/{{ my_user }}/.bashrc" }
+    - {
+        src: "terminator_config",
+        dest: "/home/{{ my_user }}/.config/terminator/config",
+      }
   tags: configs
 
 - name: install custom sysctl config
@@ -119,3 +116,10 @@
   tags: sysctl
   notify:
     - reload sysctl
+
+- name: Git clone zsh-autosuggestions
+  ansible.builtin.git:
+    repo: "https://github.com/zsh-users/zsh-autosuggestions"
+    dest: "/home/{{ my_user }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+  become_user: "{{ my_user }}"
+  tags: zsh-autosuggestions

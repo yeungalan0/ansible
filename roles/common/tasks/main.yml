@@ -1,11 +1,7 @@
 ---
 - name: install necessary packages
   package:
-    name: [
-    "autofs",
-    "cifs-utils",
-    "samba-client"
-    ]
+    name: ["autofs", "cifs-utils", "samba-client"]
     state: present
   tags: packages
 
@@ -17,7 +13,13 @@
     group: "{{ item.group }}"
     mode: "{{ item.mode }}"
   loop:
-    - { src: "custom.autofs.j2", dest: "/etc/auto.master.d/custom.autofs", owner: "root", group: "root", mode: "0755" }
+    - {
+        src: "custom.autofs.j2",
+        dest: "/etc/auto.master.d/custom.autofs",
+        owner: "root",
+        group: "root",
+        mode: "0755",
+      }
   notify:
     - restart autofs
   tags: configs
@@ -25,7 +27,7 @@
 - name: create necessary symlinks
   file:
     src: "{{ share_path }}"
-    dest: "/home/{{ user }}/readyshare"
+    dest: "/home/{{ my_user }}/readyshare"
     state: link
     force: True
     follow: False

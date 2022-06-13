@@ -1,0 +1,43 @@
+---
+- name: Check if oh-my-zsh is already installed
+  stat:
+    path: "/home/{{ my_user }}/.oh-my-zsh"
+  register: oh_my_zsh_dir
+  tags: always
+
+- name: Run oh-my-zsh role
+  include_role:
+    name: gantsign.oh-my-zsh
+    apply:
+      tags: oh_my_zsh
+  vars:
+    oh_my_zsh_plugins:
+      - "git"
+      - "zsh-autosuggestions"
+      - "z"
+      - "vi-mode"
+    oh_my_zsh_theme: "powerlevel10k/powerlevel10k"
+    users:
+      - username: "{{ my_user }}"
+  when: not oh_my_zsh_dir.stat.exists
+  tags: always
+
+- name: Install and configure powerlevel10k zsh theme
+  include_role:
+    name: diodonfrost.p10k
+    apply:
+      tags: p10k
+  vars:
+    p10k_users: "{{ my_user }}"
+    zsh_plugin: ohmyzsh
+    p10k_prompt_style: lean
+  tags: always
+
+- name: Install and configure golang
+  include_role:
+    name: fubarhouse.golang
+    apply:
+      tags: go
+  vars:
+    go_version: 1.18.3
+  tags: always

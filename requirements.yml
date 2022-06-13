@@ -1,2 +1,7 @@
 collections:
-- name: community.general
+  - name: community.general
+
+roles:
+  - name: gantsign.oh-my-zsh
+  - name: diodonfrost.p10k
+  - name: fubarhouse.golang
