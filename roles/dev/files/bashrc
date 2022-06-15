@@ -51,11 +51,11 @@ parse_git_branch() {
 function docker-bash() {
     docker exec -it $1 /bin/bash
 }
- 
+
 function bgNoOutput() {
-    $1 > /dev/null 2>&1 & 
+    $1 > /dev/null 2>&1 &
 }
- 
+
 function recat() {
 
     for var in "$@"
@@ -122,15 +122,15 @@ complete -F _upto upto
 
 export HISTTIMEFORMAT='%F %T '
 
- 
 
- 
+
+
 
 #============================================================
 #  COLOR FOR MAN PAGES
 #============================================================
 
- 
+
 
 export LESS_TERMCAP_mb=$'\E[01;31m'
 
