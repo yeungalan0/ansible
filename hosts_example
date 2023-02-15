@@ -4,3 +4,4 @@ share_path=<PATH_TO_NETWORK_SHARE>
 
 [dev]
 <DEV_HOST_TO_DEPLOY_TO>
+# localhost ansible_connection=local

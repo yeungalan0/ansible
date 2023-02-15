@@ -1,11 +1,6 @@
 ---
 - hosts: dev
   roles:
-    - { role: common, tags: common }
-    - { role: personal, tags: personal }
     - { role: dev, tags: dev }
+    - { role: personal, tags: personal }
     - { role: ext_roles, tags: ext_roles }
-
-- hosts: ansible
-  roles:
-    - { role: common, tags: common }

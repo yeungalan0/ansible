@@ -13,6 +13,22 @@ but the playbooks can be easily updated for any Linux distribution
    - `cp hosts_example hosts`
 1. Properly configure your `hosts` file
 1. Install necessary requirements
-   - `ansible-galaxy collection install -r requirements.yml`
+   - `ansible-galaxy install -r requirements.yml`
 1. Run the ansible command
    - `ansible-playbook -i hosts site.yml [-b -k -K -C -c local]`
+   - `ansible-playbook -i hosts site.yml -b -K -c local --tags dev` - to run a specific role on localhost
+     - Note: If using fingerprint auth it may be easier to run `sudo echo` first and then run the above
+       command without `-k` or you may experience hanging on gathering facts.
+
+# Troubleshooting
+
+- I was experiencing an issue with the diondonfrost.p10k package (error below). To work around this issue
+  I manually added the changes outlined in [this PR](https://github.com/diodonfrost/ansible-role-p10k/pull/3)
+  to my local copy of the role (in `https://github.com/diodonfrost/ansible-role-p10k/pull/3`)
+  ```
+  TASK [diodonfrost.p10k : Enable powerlevel10 instant prompt] *********************************************************************************************************************************************************************************
+  fatal: [localhost]: FAILED! => {"changed": false, "msg": "Path /root/.zshrc does not exist !", "rc": 257}
+  ```
+- If you are hanging on gathering facts most likely there is a sudo issue and you have fingerprint reader
+  enabled. In which case, follow the instructions outlined above to enable sudo access and remove the `-K`
+  option.

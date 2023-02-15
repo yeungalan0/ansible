@@ -6,8 +6,7 @@
 
 - name: install necessary packages
   package:
-    name:
-      [
+    name: [
         "terminator",
         "git",
         "fedora-workstation-repositories",
@@ -18,9 +17,23 @@
         "dnf-plugins-core",
         "gnome-tweaks",
         "google-chrome-stable",
+        # Packages needed for caps2esc building
+        "cmake",
+        "yaml-cpp-devel",
+        "libevdev-devel",
+        "systemd-devel",
+        "boost-devel",
+        "gcc-c++",
       ]
     state: present
   tags: packages
+
+- name: ensure necessary directories are created
+  file:
+    path: "{{ item.path }}"
+    state: directory
+  loop:
+    - { path: "/home/{{ my_user }}/.config/terminator" }
 
 - name: create necessary symlinks
   file:
@@ -37,7 +50,6 @@
   loop:
     - { name: "postman", classic: False }
     - { name: "code", classic: True }
-    - { name: "kotlin", classic: True }
     - { name: "spotify", classic: False }
   tags: snaps
 
@@ -123,3 +135,101 @@
     dest: "/home/{{ my_user }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
   become_user: "{{ my_user }}"
   tags: zsh-autosuggestions
+
+- name: Check if caps2esc is installed
+  stat:
+    path: "/etc/systemd/system/caps2esc.service"
+  register: caps2esc
+  tags: always
+
+- name: Configure caps2esc
+  block:
+    - name: Git clone necessary repos
+      ansible.builtin.git:
+        repo: "{{ item.repo }}"
+        dest: "{{ item.dest}}"
+      become: false
+      loop:
+        - {
+            repo: "https://gitlab.com/interception/linux/tools",
+            dest: "/home/{{ my_user }}/git/interception_tools",
+          }
+        - {
+            repo: "https://gitlab.com/interception/linux/plugins/caps2esc",
+            dest: "/home/{{ my_user }}/git/caps2esc",
+          }
+
+    - name: Run build commands
+      ansible.builtin.command:
+        cmd: "{{ item.command }}"
+        chdir: "{{ item.dir }}"
+        creates: "{{ item.creates }}"
+      become: false
+      loop:
+        - {
+            command: "cmake -B build -DCMAKE_BUILD_TYPE=Release",
+            dir: "/home/{{ my_user }}/git/interception_tools",
+            creates: "/home/{{ my_user }}/git/interception_tools/build/udevmon",
+          }
+        - {
+            command: "cmake --build build",
+            dir: "/home/{{ my_user }}/git/interception_tools",
+            creates: "/home/{{ my_user }}/git/interception_tools/build/udevmon",
+          }
+        - {
+            command: "cmake -B build -DCMAKE_BUILD_TYPE=Release",
+            dir: "/home/{{ my_user }}/git/caps2esc",
+            creates: "/home/{{ my_user }}/git/caps2esc/build/caps2esc",
+          }
+        - {
+            command: "cmake --build build",
+            dir: "/home/{{ my_user }}/git/caps2esc",
+            creates: "/home/{{ my_user }}/git/caps2esc/build/caps2esc",
+          }
+
+    - name: Copy binaries to desired location
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: "0755"
+        remote_src: yes
+      loop:
+        - {
+            src: "/home/{{ my_user }}/git/interception_tools/build/udevmon",
+            dest: "/usr/local/bin/udevmon",
+          }
+        - {
+            src: "/home/{{ my_user }}/git/interception_tools/build/intercept",
+            dest: "/usr/local/bin/intercept",
+          }
+        - {
+            src: "/home/{{ my_user }}/git/interception_tools/build/uinput",
+            dest: "/usr/local/bin/uinput",
+          }
+        - {
+            src: "/home/{{ my_user }}/git/caps2esc/build/caps2esc",
+            dest: "/usr/local/bin/caps2esc",
+          }
+
+    - name: Install config files
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: "0644"
+      loop:
+        - { src: "caps2esc.yaml.j2", dest: "/etc/caps2esc.yaml" }
+        - {
+            src: "caps2esc.service.j2",
+            dest: "/etc/systemd/system/caps2esc.service",
+          }
+
+    - name: Enable and start caps2esc service
+      ansible.builtin.systemd:
+        state: started
+        enabled: true
+        daemon_reload: true
+        name: caps2esc
+  tags: caps2esc
+  when: not caps2esc.stat.exists
