@@ -1,12 +1,3 @@
-- name: install snap packages
-  community.general.snap:
-    name: "{{ item.name }}"
-    classic: "{{ item.classic }}"
-    channel: "{{ item.channel }}"
-  loop:
-    - { name: "authy", classic: False, channel: "beta" }
-  tags: snaps
-
 - name: ensure necessary directories are created
   file:
     path: "{{ item.path }}"
