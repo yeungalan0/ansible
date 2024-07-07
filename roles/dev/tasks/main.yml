@@ -12,6 +12,7 @@
         "dnf-plugins-core",
         "gnome-tweaks",
         "google-chrome-stable",
+        "go-task",
         # Packages needed for caps2esc building
         "cmake",
         "yaml-cpp-devel",
