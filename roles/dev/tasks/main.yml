@@ -8,12 +8,7 @@
   package:
     name: [
         "terminator",
-        "git",
-        "fedora-workstation-repositories",
         "snapd",
-        "firefox",
-        "npm",
-        "pipenv",
         "dnf-plugins-core",
         "gnome-tweaks",
         "google-chrome-stable",

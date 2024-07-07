@@ -28,7 +28,8 @@
     apply:
       tags: p10k
   vars:
-    p10k_users: "{{ my_user }}"
+    p10k_users:
+      - "{{ my_user }}"
     zsh_plugin: ohmyzsh
     p10k_prompt_style: lean
   tags: always
@@ -39,5 +40,5 @@
     apply:
       tags: go
   vars:
-    go_version: 1.20.1
+    go_version: 1.22.5
   tags: always

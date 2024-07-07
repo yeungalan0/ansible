@@ -1,6 +1,5 @@
 [dev:vars]
 my_user=<USERID>
-share_path=<PATH_TO_NETWORK_SHARE>
 
 [dev]
 <DEV_HOST_TO_DEPLOY_TO>
