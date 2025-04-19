@@ -29,13 +29,6 @@
         group: "root",
         mode: "0644",
       }
-    - {
-        src: "emacs.j2",
-        dest: "/home/{{ my_user }}/.emacs",
-        owner: "{{ my_user }}",
-        group: "{{ my_user }}",
-        mode: "0644",
-      }
   notify:
     - restart systemd-resolved
   tags: configs
