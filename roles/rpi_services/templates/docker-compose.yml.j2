@@ -1,0 +1,25 @@
+# {{ ansible_managed }}
+services:
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    hostname: pihole
+    ports:
+      - "{{ pihole_dns_port }}:53/tcp"
+      - "{{ pihole_dns_port }}:53/udp"
+      - "{{ pihole_web_port }}:80/tcp"
+    volumes:
+      - "{{ pihole_etc_dir }}:/etc/pihole"
+      - "{{ pihole_dnsmasq_dir }}:/etc/dnsmasq.d"
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  actual:
+    image: actualbudget/actual-server:latest
+    container_name: actual
+    ports:
+      - "{{ actual_port }}:5006"
+    volumes:
+      - "{{ actual_data_dir }}:/data"
+    restart: unless-stopped

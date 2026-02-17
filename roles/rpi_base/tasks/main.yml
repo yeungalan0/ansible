@@ -1,0 +1,42 @@
+---
+- name: install base packages
+  apt:
+    name:
+      - curl
+      - git
+      - vim
+      - htop
+      - openssh-server
+      - ca-certificates
+      - gnupg
+      - python3-apt
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  tags: packages
+
+- name: deploy SSH authorized keys
+  authorized_key:
+    user: "{{ my_user }}"
+    state: present
+    key: "{{ lookup('file', item) }}"
+  with_fileglob:
+    - "{{ playbook_dir }}/../files/ssh_keys/*.pub"
+  tags: ssh
+
+- name: ensure sshd is enabled and started
+  service:
+    name: ssh
+    state: started
+    enabled: true
+  tags: ssh
+
+- name: disable SSH password authentication (opt-in)
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^#?PasswordAuthentication"
+    line: "PasswordAuthentication no"
+    validate: "sshd -t -f %s"
+  when: sshd_disable_password_auth | bool
+  notify: restart sshd
+  tags: ssh

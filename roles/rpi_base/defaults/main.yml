@@ -1,0 +1,4 @@
+---
+# Set to true to disable SSH password authentication.
+# Only enable AFTER confirming key-based access works to avoid lockout.
+sshd_disable_password_auth: false

@@ -1,0 +1,27 @@
+---
+# Raspberry Pi group variables
+
+# User account on the Pi
+my_user: pi
+
+# SSH hardening — set to true AFTER confirming key-based SSH access works.
+# WARNING: enabling this will disable password login; ensure your keys work first.
+sshd_disable_password_auth: false
+
+# Pi-hole web UI password (leave empty to set manually after deploy)
+# To set post-deploy: docker exec pihole pihole -a -p <NEW_PASSWORD>
+pihole_webpassword: ""
+
+# Timezone (used by Pi-hole container)
+pihole_timezone: "America/Denver"
+
+# Service ports
+pihole_web_port: "80"
+pihole_dns_port: "53"
+actual_port: "5006"
+
+# Filesystem layout
+compose_dir: /srv/compose
+pihole_etc_dir: /srv/pihole/etc-pihole
+pihole_dnsmasq_dir: /srv/pihole/etc-dnsmasq.d
+actual_data_dir: /srv/actual

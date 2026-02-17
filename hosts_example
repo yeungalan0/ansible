@@ -4,3 +4,10 @@ my_user=<USERID>
 [dev]
 <DEV_HOST_TO_DEPLOY_TO>
 # localhost ansible_connection=local
+
+# --- Raspberry Pi ---
+[rpi:vars]
+my_user=pi
+
+[rpi]
+<PI_IP_ADDRESS>

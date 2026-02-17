@@ -1,0 +1,9 @@
+---
+- name: reload systemd
+  systemd:
+    daemon_reload: true
+
+- name: restart compose services
+  systemd:
+    name: docker-compose-srv
+    state: restarted

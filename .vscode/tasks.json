@@ -14,6 +14,12 @@
       "type": "shell",
       "command": "sudo ansible-galaxy collection install -r requirements.yml",
       "problemMatcher": []
+    },
+    {
+      "label": "ansible provision raspberry pi",
+      "type": "shell",
+      "command": "ansible-playbook -i hosts playbooks/pi.yml",
+      "problemMatcher": []
     }
   ]
 }
