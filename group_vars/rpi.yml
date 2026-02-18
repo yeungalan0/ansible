@@ -31,8 +31,7 @@ actual_data_dir: /srv/actual
 # Pi-hole local DNS: map pi_ts_hostname → pi_lan_ip so LAN clients
 # can reach the Tailscale HTTPS hostname without Tailscale installed.
 # Set pi_lan_ip in your inventory [rpi:vars] (do NOT commit real IPs).
-# Leave empty to skip.
-pi_lan_ip: ""
+# If pi_lan_ip is not set, the DNS record task is skipped.
 
 # --- Tailscale + Caddy reverse proxy ---
 # Tailscale hostname (PLACEHOLDER — set to your real *.ts.net hostname

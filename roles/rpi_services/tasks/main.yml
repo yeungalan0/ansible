@@ -54,7 +54,9 @@
     mode: "0644"
   when: pi_lan_ip | default('') | length > 0
   notify: restart pihole dns
-  tags: compose
+  tags:
+    - compose
+    - dns
 
 - name: enable and start Docker Compose service
   systemd:
