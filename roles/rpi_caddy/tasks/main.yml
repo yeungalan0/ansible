@@ -28,25 +28,11 @@
     mode: "0644"
   tags: caddy
 
-- name: install Caddy (apt — for systemd service, user, dirs)
+- name: install Caddy
   apt:
     name: caddy
     state: present
     update_cache: true
-  tags: caddy
-
-- name: map architecture to Go arch name
-  set_fact:
-    caddy_go_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
-  tags: caddy
-
-- name: install Caddy with Tailscale module (custom build)
-  get_url:
-    url: "https://caddyserver.com/api/download?os=linux&arch={{ caddy_go_arch }}&p=github.com/tailscale/caddy-tailscale"
-    dest: /usr/bin/caddy
-    mode: "0755"
-    force: true
-  notify: restart caddy
   tags: caddy
 
 - name: deploy Caddyfile
