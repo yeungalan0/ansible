@@ -19,7 +19,7 @@ services:
     image: actualbudget/actual-server:latest
     container_name: actual
     ports:
-      - "127.0.0.1:{{ actual_port }}:5006"
+      - "127.0.0.1:{{ actual_internal_port }}:5006"
     volumes:
       - "{{ actual_data_dir }}:/data"
     restart: unless-stopped

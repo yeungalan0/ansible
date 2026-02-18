@@ -20,6 +20,7 @@ pihole_timezone: "America/Denver"
 pihole_web_port: "8080"
 pihole_dns_port: "53"
 actual_port: "5006"
+actual_internal_port: "5007"
 
 # Filesystem layout
 compose_dir: /srv/compose

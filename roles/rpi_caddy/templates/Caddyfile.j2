@@ -7,7 +7,7 @@
 
 # Actual Budget on dedicated port (Tailscale cert)
 {{ pi_ts_hostname }}:{{ actual_port }} {
-	reverse_proxy 127.0.0.1:{{ actual_port }}
+	reverse_proxy 127.0.0.1:{{ actual_internal_port }}
 }
 
 # Pi-hole on default HTTPS port (self-signed cert for LAN IP access)
@@ -19,5 +19,5 @@
 # Actual Budget on dedicated port (self-signed cert for LAN IP access)
 :{{ actual_port }} {
 	tls internal
-	reverse_proxy 127.0.0.1:{{ actual_port }}
+	reverse_proxy 127.0.0.1:{{ actual_internal_port }}
 }
