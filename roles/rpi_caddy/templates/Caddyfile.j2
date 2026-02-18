@@ -1,11 +1,7 @@
 # {{ ansible_managed }}
 
 {
-	pki {
-		ca local {
-			install_trust false
-		}
-	}
+	skip_install_trust
 }
 
 # Pi-hole — Tailscale HTTPS (auto cert from tailscaled)
