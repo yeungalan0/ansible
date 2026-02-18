@@ -104,13 +104,14 @@ clone this repo directly onto the Pi and run Ansible locally:
 
 1. **Set the Pi-hole web UI password** (it is deliberately left blank for security):
    ```bash
-   ssh pi@<PI_IP> "docker exec pihole pihole -a -p"
+   docker exec -it pihole pihole setpassword
    ```
    You will be prompted to enter a new password.
 2. **Point your router's DNS** to the Pi's IP address so all devices on the
    network use Pi-hole for DNS resolution.
-3. **Access Actual Budget** at `http://<PI_IP>:5006` and complete the initial setup.
-4. **(Optional) Harden SSH** — once you have confirmed key-based SSH access works,
+3. **Access Actual Budget** at `http://<PI_IP>/` and complete the initial setup.
+4. **Access Pi-hole admin** at `http://<PI_IP>/admin`.
+5. **(Optional) Harden SSH** — once you have confirmed key-based SSH access works,
    set `sshd_disable_password_auth: true` in `group_vars/rpi.yml` and re-run
    the playbook to disable password authentication.
 
