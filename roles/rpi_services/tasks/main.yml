@@ -47,15 +47,12 @@
 
 - name: deploy Pi-hole local DNS records
   copy:
-    content: |
-      {% for entry in pihole_local_dns %}
-      {{ entry.ip }} {{ entry.domain }}
-      {% endfor %}
+    content: "{{ pi_lan_ip }} {{ pi_ts_hostname }}\n"
     dest: "{{ pihole_etc_dir }}/custom.list"
     owner: root
     group: root
     mode: "0644"
-  when: pihole_local_dns | default([]) | length > 0
+  when: pi_lan_ip | default('') | length > 0
   notify: restart pihole dns
   tags: compose
 
