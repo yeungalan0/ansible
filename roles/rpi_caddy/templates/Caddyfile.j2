@@ -15,19 +15,3 @@
 	}
 	reverse_proxy 127.0.0.1:{{ actual_internal_port }}
 }
-
-# Pi-hole — LAN IP fallback (serves Tailscale cert; browser will warn about name mismatch)
-:443 {
-	tls {
-		get_certificate tailscale
-	}
-	reverse_proxy 127.0.0.1:{{ pihole_web_port }}
-}
-
-# Actual Budget — LAN IP fallback (serves Tailscale cert; browser will warn about name mismatch)
-:{{ actual_port }} {
-	tls {
-		get_certificate tailscale
-	}
-	reverse_proxy 127.0.0.1:{{ actual_internal_port }}
-}
