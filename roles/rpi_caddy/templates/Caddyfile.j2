@@ -1,9 +1,5 @@
 # {{ ansible_managed }}
 
-{
-	skip_install_trust
-}
-
 # Pi-hole — Tailscale HTTPS (auto cert from tailscaled)
 {{ pi_ts_hostname }} {
 	tls {
@@ -20,14 +16,18 @@
 	reverse_proxy 127.0.0.1:{{ actual_internal_port }}
 }
 
-# Pi-hole — LAN IP access (self-signed cert)
+# Pi-hole — LAN IP fallback (serves Tailscale cert; browser will warn about name mismatch)
 :443 {
-	tls internal
+	tls {
+		get_certificate tailscale
+	}
 	reverse_proxy 127.0.0.1:{{ pihole_web_port }}
 }
 
-# Actual Budget — LAN IP access (self-signed cert)
+# Actual Budget — LAN IP fallback (serves Tailscale cert; browser will warn about name mismatch)
 :{{ actual_port }} {
-	tls internal
+	tls {
+		get_certificate tailscale
+	}
 	reverse_proxy 127.0.0.1:{{ actual_internal_port }}
 }

@@ -139,14 +139,12 @@ Caddy reverse-proxies each service on its own port:
 - `https://<pi_ts_hostname>/` → Pi-hole (port 443)
 - `https://<pi_ts_hostname>:5006/` → Actual Budget
 
-LAN access via IP also works with a self-signed cert (browser will warn):
-
-- `https://<PI_IP>/` → Pi-hole
-- `https://<PI_IP>:5006/` → Actual Budget
-
 Docker Compose binds the Pi-hole and Actual web ports to `127.0.0.1` only,
 so the sole public-facing web entrypoints are via Caddy. DNS (port 53)
 remains exposed on all interfaces for LAN clients.
+
+LAN clients that don't have Tailscale can still use the HTTPS hostname — see
+"Optional: LAN access without Tailscale" below.
 
 ### Tailscale + Caddy Setup (after Ansible completes)
 
@@ -189,14 +187,17 @@ the non-root `caddy` user to request certificates.
 
 ### Optional: LAN access without Tailscale
 
-If you want devices on your LAN (without Tailscale installed) to reach the
-HTTPS hostname, add a **Pi-hole Local DNS** A record:
+Devices on your LAN that don't have Tailscale installed can still reach the
+services with **trusted HTTPS** — no self-signed certificate warnings.
+Add a **Pi-hole Local DNS** A record:
 
 - **Domain**: your `pi_ts_hostname` (e.g., `mypi.your-tailnet.ts.net`)
 - **IP**: the Pi's LAN IP (e.g., `192.168.1.x`)
 
-This makes Pi-hole resolve the hostname to the local IP. LAN clients will
-still see a valid TLS certificate because Caddy serves the Tailscale cert.
+This makes Pi-hole resolve the Tailscale hostname to the local IP, so LAN
+clients connect directly to the Pi over the local network. Caddy still
+serves the valid Tailscale-issued TLS certificate, so there are no browser
+warnings.
 
 ### Tailscale + Caddy Troubleshooting
 
