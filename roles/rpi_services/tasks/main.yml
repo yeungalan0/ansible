@@ -45,12 +45,21 @@
     - restart compose services
   tags: systemd
 
+- name: check current Pi-hole local DNS hosts
+  command: docker exec pihole pihole-FTL --config dns.hosts
+  register: pihole_dns_hosts_current
+  changed_when: false
+  when: pi_lan_ip | default('') | length > 0
+  tags:
+    - compose
+    - dns
+
 - name: configure Pi-hole local DNS record (v6 dns.hosts)
   command: >
     docker exec pihole pihole-FTL --config dns.hosts '["{{ pi_lan_ip }} {{ pi_ts_hostname }}"]'
-  register: pihole_dns_hosts
-  changed_when: "'dns.hosts' in pihole_dns_hosts.stdout"
-  when: pi_lan_ip | default('') | length > 0
+  when:
+    - pi_lan_ip | default('') | length > 0
+    - (pi_lan_ip ~ ' ' ~ pi_ts_hostname) not in (pihole_dns_hosts_current.stdout | default(''))
   tags:
     - compose
     - dns
