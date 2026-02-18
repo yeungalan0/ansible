@@ -6,3 +6,5 @@
     - { role: rpi_base, tags: rpi_base }
     - { role: rpi_docker, tags: rpi_docker }
     - { role: rpi_services, tags: rpi_services }
+    - { role: rpi_tailscale, tags: rpi_tailscale }
+    - { role: rpi_caddy, tags: rpi_caddy }

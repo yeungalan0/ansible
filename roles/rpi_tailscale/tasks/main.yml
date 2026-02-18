@@ -1,0 +1,55 @@
+---
+- name: install Tailscale apt prerequisites
+  apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - apt-transport-https
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  tags: tailscale
+
+- name: add Tailscale signing key
+  get_url:
+    url: "https://pkgs.tailscale.com/stable/{{ ansible_distribution | lower }}/{{ ansible_distribution_release }}.noarmor.gpg"
+    dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+    mode: "0644"
+  tags: tailscale
+
+- name: add Tailscale apt repository
+  copy:
+    content: |
+      deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main
+    dest: /etc/apt/sources.list.d/tailscale.list
+    owner: root
+    group: root
+    mode: "0644"
+  tags: tailscale
+
+- name: install Tailscale
+  apt:
+    name: tailscale
+    state: present
+    update_cache: true
+  tags: tailscale
+
+- name: configure TS_PERMIT_CERT_UID for Caddy
+  lineinfile:
+    path: /etc/default/tailscaled
+    regexp: "^#?TS_PERMIT_CERT_UID="
+    line: "TS_PERMIT_CERT_UID=caddy"
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart tailscaled
+  tags: tailscale
+
+- name: enable and start tailscaled
+  systemd:
+    name: tailscaled
+    state: started
+    enabled: true
+  tags: tailscale

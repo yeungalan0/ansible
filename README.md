@@ -118,14 +118,91 @@ clone this repo directly onto the Pi and run Ansible locally:
 
 All Pi-specific variables are in `group_vars/rpi.yml`. Key settings:
 
-| Variable                     | Default            | Description                            |
-| ---------------------------- | ------------------ | -------------------------------------- |
-| `my_user`                    | `pi`               | User account on the Pi                 |
-| `sshd_disable_password_auth` | `false`            | Disable SSH password auth (opt-in)     |
-| `pihole_webpassword`         | `""` (empty)       | Pi-hole web password (set post-deploy) |
-| `pihole_timezone`            | `America/New_York` | Timezone for Pi-hole                   |
-| `pihole_web_port`            | `80`               | Pi-hole web UI port                    |
-| `actual_port`                | `5006`             | Actual Budget web port                 |
+| Variable                     | Default                      | Description                                   |
+| ---------------------------- | ---------------------------- | --------------------------------------------- |
+| `my_user`                    | `pi`                         | User account on the Pi                        |
+| `sshd_disable_password_auth` | `false`                      | Disable SSH password auth (opt-in)            |
+| `pihole_webpassword`         | `""` (empty)                 | Pi-hole web password (set post-deploy)        |
+| `pihole_timezone`            | `America/New_York`           | Timezone for Pi-hole                          |
+| `pihole_web_port`            | `80`                         | Pi-hole web UI port                           |
+| `actual_port`                | `5006`                       | Actual Budget web port                        |
+| `pi_ts_hostname`             | `pi-hostname.example.ts.net` | Tailscale HTTPS hostname (set via extra-vars) |
+
+## HTTPS via Tailscale + Caddy (Pi-hole + Actual Budget)
+
+The Pi playbook also installs **Tailscale** and **Caddy** so you get automatic
+HTTPS with Tailscale-provided TLS certificates — no manual cert rotation needed.
+
+Caddy reverse-proxies both services under a single `*.ts.net` hostname:
+
+- `https://<pi_ts_hostname>/` → Actual Budget
+- `https://<pi_ts_hostname>/admin` → Pi-hole web UI
+
+Docker Compose binds the Pi-hole and Actual web ports to `127.0.0.1` only,
+so the sole public-facing web entrypoint is Caddy on port 443. DNS (port 53)
+remains exposed on all interfaces for LAN clients.
+
+### Tailscale + Caddy Setup (after Ansible completes)
+
+1. **Set your Tailscale hostname** — either add `pi_ts_hostname` to your
+   inventory `[rpi:vars]` section, or pass it at runtime:
+
+   ```bash
+   ansible-playbook -i hosts playbooks/pi.yml -K \
+     -e pi_ts_hostname=mypi.your-tailnet.ts.net
+   ```
+
+   ⚠️ Do NOT commit your real tailnet name to this public repo.
+
+2. **Log in to Tailscale** on the Pi (one-time, manual step):
+
+   ```bash
+   sudo tailscale up
+   ```
+
+   Follow the printed URL to authenticate. Confirm with:
+
+   ```bash
+   tailscale status
+   ```
+
+3. **Enable HTTPS certificates** in the
+   [Tailscale admin console](https://login.tailscale.com/admin/dns) →
+   DNS → Enable HTTPS Certificates. This lets machines in your tailnet
+   request TLS certs for their `*.ts.net` hostnames.
+
+4. **Restart Caddy** so it fetches the cert (it may do this automatically,
+   but to be safe):
+   ```bash
+   sudo systemctl restart caddy
+   ```
+
+Caddy fetches and renews certs from the local Tailscale daemon automatically.
+The `TS_PERMIT_CERT_UID=caddy` setting (in `/etc/default/tailscaled`) allows
+the non-root `caddy` user to request certificates.
+
+### Optional: LAN access without Tailscale
+
+If you want devices on your LAN (without Tailscale installed) to reach the
+HTTPS hostname, add a **Pi-hole Local DNS** A record:
+
+- **Domain**: your `pi_ts_hostname` (e.g., `mypi.your-tailnet.ts.net`)
+- **IP**: the Pi's LAN IP (e.g., `192.168.1.x`)
+
+This makes Pi-hole resolve the hostname to the local IP. LAN clients will
+still see a valid TLS certificate because Caddy serves the Tailscale cert.
+
+### Tailscale + Caddy Troubleshooting
+
+```bash
+# Check service status
+sudo systemctl status tailscaled caddy
+
+# View logs
+sudo journalctl -u tailscaled -u caddy -e --no-pager
+
+# Note: 'tailscale cert' is NOT needed — Caddy handles cert fetching automatically
+```
 
 ---
 

@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+{{ pi_ts_hostname }} {
+	handle_path /admin* {
+		reverse_proxy 127.0.0.1:{{ pihole_web_port }}
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:{{ actual_port }}
+	}
+}

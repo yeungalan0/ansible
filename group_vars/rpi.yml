@@ -26,3 +26,9 @@ compose_dir: /srv/compose
 pihole_etc_dir: /srv/pihole/etc-pihole
 pihole_dnsmasq_dir: /srv/pihole/etc-dnsmasq.d
 actual_data_dir: /srv/actual
+
+# --- Tailscale + Caddy reverse proxy ---
+# Tailscale hostname (PLACEHOLDER — set to your real *.ts.net hostname
+# in your inventory [rpi:vars] or via --extra-vars at runtime;
+# do NOT commit your real tailnet name to this public repo)
+pi_ts_hostname: "pi-hostname.example.ts.net"

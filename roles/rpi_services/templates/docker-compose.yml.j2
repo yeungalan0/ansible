@@ -7,7 +7,7 @@ services:
     ports:
       - "{{ pihole_dns_port }}:53/tcp"
       - "{{ pihole_dns_port }}:53/udp"
-      - "{{ pihole_web_port }}:80/tcp"
+      - "127.0.0.1:{{ pihole_web_port }}:80/tcp"
     volumes:
       - "{{ pihole_etc_dir }}:/etc/pihole"
       - "{{ pihole_dnsmasq_dir }}:/etc/dnsmasq.d"
@@ -19,7 +19,7 @@ services:
     image: actualbudget/actual-server:latest
     container_name: actual
     ports:
-      - "{{ actual_port }}:5006"
+      - "127.0.0.1:{{ actual_port }}:5006"
     volumes:
       - "{{ actual_data_dir }}:/data"
     restart: unless-stopped
