@@ -16,8 +16,8 @@ pihole_webpassword: ""
 # Timezone (used by Pi-hole container)
 pihole_timezone: "America/Denver"
 
-# Service ports
-pihole_web_port: "80"
+# Service ports (Pi-hole web on 8080 behind Caddy; port 80 reserved for Caddy)
+pihole_web_port: "8080"
 pihole_dns_port: "53"
 actual_port: "5006"
 
