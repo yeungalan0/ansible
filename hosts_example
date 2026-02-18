@@ -7,7 +7,7 @@ my_user=<USERID>
 
 # --- Raspberry Pi ---
 [rpi:vars]
-my_user=pi
+my_user=<PI_USERNAME>
 
 [rpi]
 <PI_IP_ADDRESS>

@@ -1,8 +1,9 @@
 ---
 # Raspberry Pi group variables
-
-# User account on the Pi
-my_user: pi
+#
+# NOTE: my_user is set in the inventory file [rpi:vars] section,
+# NOT here. group_vars has higher precedence than inventory vars
+# and would override the per-environment value.
 
 # SSH hardening — set to true AFTER confirming key-based SSH access works.
 # WARNING: enabling this will disable password login; ensure your keys work first.
