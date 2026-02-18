@@ -7,3 +7,7 @@
   systemd:
     name: docker-compose-srv
     state: restarted
+
+- name: restart pihole dns
+  command: docker exec pihole pihole restartdns
+  changed_when: true

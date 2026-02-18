@@ -28,6 +28,13 @@ pihole_etc_dir: /srv/pihole/etc-pihole
 pihole_dnsmasq_dir: /srv/pihole/etc-dnsmasq.d
 actual_data_dir: /srv/actual
 
+# Pi-hole local DNS records (written to /etc/pihole/custom.list)
+# Override in inventory [rpi:vars] or via --extra-vars with your real values.
+# Example:
+#   pihole_local_dns:
+#     - { domain: "mypi.tailnet.ts.net", ip: "192.168.1.x" }
+pihole_local_dns: []
+
 # --- Tailscale + Caddy reverse proxy ---
 # Tailscale hostname (PLACEHOLDER — set to your real *.ts.net hostname
 # in your inventory [rpi:vars] or via --extra-vars at runtime;

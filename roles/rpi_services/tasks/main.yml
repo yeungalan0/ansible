@@ -45,6 +45,20 @@
     - restart compose services
   tags: systemd
 
+- name: deploy Pi-hole local DNS records
+  copy:
+    content: |
+      {% for entry in pihole_local_dns %}
+      {{ entry.ip }} {{ entry.domain }}
+      {% endfor %}
+    dest: "{{ pihole_etc_dir }}/custom.list"
+    owner: root
+    group: root
+    mode: "0644"
+  when: pihole_local_dns | default([]) | length > 0
+  notify: restart pihole dns
+  tags: compose
+
 - name: enable and start Docker Compose service
   systemd:
     name: docker-compose-srv
