@@ -34,7 +34,6 @@ actual_data_dir: /srv/actual
 # If pi_lan_ip is not set, the DNS record task is skipped.
 
 # --- Tailscale + Caddy reverse proxy ---
-# Tailscale hostname (PLACEHOLDER — set to your real *.ts.net hostname
-# in your inventory [rpi:vars] or via --extra-vars at runtime;
-# do NOT commit your real tailnet name to this public repo)
-pi_ts_hostname: "pi-hostname.example.ts.net"
+# Set pi_ts_hostname to your real *.ts.net hostname in your inventory
+# [rpi:vars] or via --extra-vars at runtime.
+# Do NOT commit your real tailnet name to this public repo.
