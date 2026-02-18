@@ -45,15 +45,12 @@
     - restart compose services
   tags: systemd
 
-- name: deploy Pi-hole local DNS records
-  copy:
-    content: "{{ pi_lan_ip }} {{ pi_ts_hostname }}\n"
-    dest: "{{ pihole_etc_dir }}/custom.list"
-    owner: root
-    group: root
-    mode: "0644"
+- name: configure Pi-hole local DNS record (v6 dns.hosts)
+  command: >
+    docker exec pihole pihole-FTL --config dns.hosts '["{{ pi_lan_ip }} {{ pi_ts_hostname }}"]'
+  register: pihole_dns_hosts
+  changed_when: "'dns.hosts' in pihole_dns_hosts.stdout"
   when: pi_lan_ip | default('') | length > 0
-  notify: restart pihole dns
   tags:
     - compose
     - dns
