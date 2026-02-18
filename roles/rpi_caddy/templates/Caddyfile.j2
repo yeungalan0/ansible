@@ -1,5 +1,13 @@
 # {{ ansible_managed }}
 
+{
+	pki {
+		ca local {
+			install_trust false
+		}
+	}
+}
+
 # Pi-hole — Tailscale HTTPS (auto cert from tailscaled)
 {{ pi_ts_hostname }} {
 	tls {
