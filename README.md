@@ -134,13 +134,18 @@ All Pi-specific variables are in `group_vars/rpi.yml`. Key settings:
 The Pi playbook also installs **Tailscale** and **Caddy** so you get automatic
 HTTPS with Tailscale-provided TLS certificates — no manual cert rotation needed.
 
-Caddy reverse-proxies both services under a single `*.ts.net` hostname:
+Caddy reverse-proxies each service on its own port:
 
-- `https://<pi_ts_hostname>/` → Actual Budget
-- `https://<pi_ts_hostname>/admin` → Pi-hole web UI
+- `https://<pi_ts_hostname>/` → Pi-hole (port 443)
+- `https://<pi_ts_hostname>:5006/` → Actual Budget
+
+LAN access via IP also works with a self-signed cert (browser will warn):
+
+- `https://<PI_IP>/` → Pi-hole
+- `https://<PI_IP>:5006/` → Actual Budget
 
 Docker Compose binds the Pi-hole and Actual web ports to `127.0.0.1` only,
-so the sole public-facing web entrypoint is Caddy on port 443. DNS (port 53)
+so the sole public-facing web entrypoints are via Caddy. DNS (port 53)
 remains exposed on all interfaces for LAN clients.
 
 ### Tailscale + Caddy Setup (after Ansible completes)
