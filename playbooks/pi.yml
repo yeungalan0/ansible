@@ -8,3 +8,4 @@
     - { role: rpi_services, tags: rpi_services }
     - { role: rpi_tailscale, tags: rpi_tailscale }
     - { role: rpi_caddy, tags: rpi_caddy }
+    - { role: rpi_backup, tags: rpi_backup }

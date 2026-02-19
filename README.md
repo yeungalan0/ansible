@@ -128,6 +128,7 @@ All Pi-specific variables are in `group_vars/rpi.yml`. Key settings:
 | `pihole_web_port`            | `80`                         | Pi-hole web UI port                           |
 | `actual_port`                | `5006`                       | Actual Budget web port                        |
 | `pi_ts_hostname`             | `pi-hostname.example.ts.net` | Tailscale HTTPS hostname (set via extra-vars) |
+| `backup_email_to`            | _(required)_                 | Backup notification email (set in inventory)  |
 
 ## HTTPS via Tailscale + Caddy (Pi-hole + Actual Budget)
 
@@ -210,6 +211,106 @@ sudo journalctl -u tailscaled -u caddy -e --no-pager
 
 # Note: 'tailscale cert' is NOT needed — Caddy handles cert fetching automatically
 ```
+
+## Actual Budget Backup (rclone + systemd timer)
+
+The `rpi_backup` role sets up automated weekly backups of Actual Budget data
+to a cloud storage remote via **rclone**, with email notifications and
+automatic retention pruning.
+
+**What it does:**
+
+- Zips the Actual Budget data directory (`/srv/actual`)
+- Uploads the archive to an rclone remote (e.g. Google Drive)
+- Prunes backups older than 90 days from the remote
+- Sends a success/failure email notification
+- Runs every Sunday at 02:00 via a systemd timer
+
+### Backup Variables
+
+| Variable                | Default              | Where to set         | Description                        |
+| ----------------------- | -------------------- | -------------------- | ---------------------------------- |
+| `backup_email_to`       | _(required)_         | `hosts` inventory    | Email address for notifications    |
+| `backup_rclone_remote`  | `actual_drive:`      | `group_vars/rpi.yml` | rclone remote name                 |
+| `backup_rclone_dir`     | `actual-backups`     | `group_vars/rpi.yml` | Folder on the remote               |
+| `backup_schedule`       | `Sun *-*-* 02:00:00` | `group_vars/rpi.yml` | systemd timer schedule             |
+| `backup_retention_days` | `90`                 | `group_vars/rpi.yml` | Days before old backups are pruned |
+
+### Post-Deploy: Configure rclone remote
+
+The rclone remote requires an interactive OAuth flow and **cannot** be
+automated by Ansible. Run this once after deploy:
+
+```bash
+# Run as the pi user (rclone config is per-user)
+sudo -u <PI_USERNAME> rclone config
+```
+
+Create a remote named `actual_drive` (or whatever `backup_rclone_remote` is
+set to, without the trailing colon). For Google Drive, choose "drive" as the
+storage type and follow the OAuth prompts.
+
+Verify the remote works:
+
+```bash
+sudo -u <PI_USERNAME> rclone ls actual_drive:
+```
+
+### Post-Deploy: Test the backup
+
+Run the backup manually to confirm everything works:
+
+```bash
+sudo systemctl start backup-actual.service
+```
+
+Check the results:
+
+```bash
+# systemd journal
+sudo journalctl -u backup-actual.service -e --no-pager
+
+# Script log
+cat /tmp/actual-backup.log
+
+# Timer status
+systemctl list-timers backup-actual.timer
+```
+
+### Post-Deploy: Configure email (msmtp)
+
+The role installs `msmtp` and `bsd-mailx`, but the SMTP configuration
+(server, credentials) must be set up manually — **do not commit app
+passwords to this repo**.
+
+Create `/etc/msmtprc` on the Pi:
+
+```ini
+defaults
+auth           on
+tls            on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+logfile        /var/log/msmtp.log
+
+account        default
+host           smtp.gmail.com
+port           587
+from           your-email@gmail.com
+user           your-email@gmail.com
+password       YOUR_APP_PASSWORD
+```
+
+Set permissions: `sudo chmod 600 /etc/msmtprc`
+
+Test email delivery:
+
+```bash
+echo "Test from Pi" | mail -s "msmtp test" you@example.com
+```
+
+> **Gmail users:** Use an
+> [App Password](https://myaccount.google.com/apppasswords), not your
+> regular password.
 
 ---
 

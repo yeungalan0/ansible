@@ -1,0 +1,69 @@
+---
+- name: assert backup_email_to is set
+  assert:
+    that:
+      - backup_email_to is defined
+      - backup_email_to | length > 0
+    fail_msg: >-
+      backup_email_to must be set in your inventory [rpi:vars] section.
+      Example: backup_email_to=you@example.com
+  tags: rpi_backup
+
+- name: install backup packages (rclone, zip, mail)
+  apt:
+    name:
+      - rclone
+      - zip
+      - msmtp
+      - msmtp-mta
+      - bsd-mailx
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  tags: rpi_backup
+
+- name: create user bin directory
+  file:
+    path: "/home/{{ my_user }}/bin"
+    state: directory
+    owner: "{{ my_user }}"
+    group: "{{ my_user }}"
+    mode: "0755"
+  tags: rpi_backup
+
+- name: deploy backup script
+  template:
+    src: backup-actual.sh.j2
+    dest: "/home/{{ my_user }}/bin/backup-actual.sh"
+    owner: "{{ my_user }}"
+    group: "{{ my_user }}"
+    mode: "0755"
+  tags: rpi_backup
+
+- name: deploy backup systemd service
+  template:
+    src: backup-actual.service.j2
+    dest: /etc/systemd/system/backup-actual.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload systemd
+  tags: rpi_backup
+
+- name: deploy backup systemd timer
+  template:
+    src: backup-actual.timer.j2
+    dest: /etc/systemd/system/backup-actual.timer
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload systemd
+  tags: rpi_backup
+
+- name: enable and start backup timer
+  systemd:
+    name: backup-actual.timer
+    state: started
+    enabled: true
+    daemon_reload: true
+  tags: rpi_backup

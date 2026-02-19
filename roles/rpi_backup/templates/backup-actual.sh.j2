@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# {{ ansible_managed }}
+set -euo pipefail
+
+# ===== User-configurable via env (do not hardcode secrets) =====
+BACKUP_SRC="${BACKUP_SRC:-{{ actual_data_dir }}}"
+RCLONE_REMOTE="${RCLONE_REMOTE:-{{ backup_rclone_remote }}}"
+RCLONE_DIR="${RCLONE_DIR:-{{ backup_rclone_dir }}}"
+EMAIL_TO="${EMAIL_TO:-{{ backup_email_to }}}"
+RETENTION_DAYS="${RETENTION_DAYS:-{{ backup_retention_days }}}"
+
+# ===== Internals =====
+TIMESTAMP="$(date +%Y-%m-%d_%H-%M)"
+HOST="$(hostname -s)"
+ARCHIVE_NAME="actual-backup-${HOST}-${TIMESTAMP}.zip"
+WORK_DIR="${WORK_DIR:-/tmp/actual-backup}"
+LOGFILE="${LOGFILE:-/tmp/actual-backup.log}"
+
+mkdir -p "$WORK_DIR"
+: > "$LOGFILE"
+exec > >(tee -a "$LOGFILE") 2>&1
+
+send_mail() {
+  local status="$1"
+  local subject="$2"
+  if [[ -z "$EMAIL_TO" ]]; then
+    echo "EMAIL_TO not set; skipping email (${status})."
+    return 0
+  fi
+  if ! command -v mail >/dev/null 2>&1; then
+    echo "'mail' not installed; skipping email (${status})."
+    return 0
+  fi
+  mail -s "$subject" "$EMAIL_TO" < "$LOGFILE" || true
+}
+
+on_error() {
+  local rc=$?
+  echo "❌ Backup FAILED (exit $rc) on $HOST at $TIMESTAMP"
+  send_mail "FAILED" "❌ Actual Backup FAILED on ${HOST} at ${TIMESTAMP}"
+  exit "$rc"
+}
+trap on_error ERR
+
+echo "📦 Starting Actual Budget backup: $TIMESTAMP"
+echo "Source: $BACKUP_SRC"
+echo "Work:   $WORK_DIR/$ARCHIVE_NAME"
+echo "Remote: ${RCLONE_REMOTE}${RCLONE_DIR}/$ARCHIVE_NAME"
+echo
+
+if [[ ! -d "$BACKUP_SRC" ]]; then
+  echo "ERROR: BACKUP_SRC does not exist: $BACKUP_SRC"
+  exit 2
+fi
+
+# Zip relative paths (avoid absolute paths inside zip)
+PARENT_DIR="$(dirname "$BACKUP_SRC")"
+BASE_DIR="$(basename "$BACKUP_SRC")"
+
+cd "$PARENT_DIR"
+zip -rq "$WORK_DIR/$ARCHIVE_NAME" "$BASE_DIR" \
+  -x "${BASE_DIR}/certs/*" -x "${BASE_DIR}/**/certs/*"
+echo "✅ Archive created: $ARCHIVE_NAME"
+
+# Ensure remote folder exists and upload
+rclone mkdir "${RCLONE_REMOTE}${RCLONE_DIR}" || true
+rclone copyto \
+  --retries 3 --retries-sleep 10s --timeout 60s \
+  "$WORK_DIR/$ARCHIVE_NAME" \
+  "${RCLONE_REMOTE}${RCLONE_DIR}/$ARCHIVE_NAME"
+echo "✅ Uploaded to: ${RCLONE_REMOTE}${RCLONE_DIR}/$ARCHIVE_NAME"
+
+# Prune old backups from remote (guarded — won't fail the backup)
+if rclone delete "${RCLONE_REMOTE}${RCLONE_DIR}" --min-age "${RETENTION_DAYS}d" 2>&1; then
+  echo "🗑️  Pruned remote backups older than ${RETENTION_DAYS} days"
+else
+  echo "⚠️  Remote prune failed (non-fatal); backups may accumulate"
+fi
+
+rm -f "$WORK_DIR/$ARCHIVE_NAME"
+echo "🧹 Cleaned up temporary file"
+echo
+echo "✅ Backup SUCCESS on $HOST at $(date)"
+
+send_mail "SUCCESS" "✅ Actual Backup SUCCESS on ${HOST} at ${TIMESTAMP}"

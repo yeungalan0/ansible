@@ -10,6 +10,7 @@ my_user=<USERID>
 my_user=<PI_USERNAME>
 pi_ts_hostname=<YOUR_PI>.tailnet.ts.net
 pi_lan_ip=<PI_LAN_IP>
+backup_email_to=<YOUR_EMAIL>
 
 [rpi]
 <PI_IP_ADDRESS>

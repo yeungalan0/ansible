@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Backup Actual Budget data to cloud storage (rclone)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User={{ my_user }}
+Group={{ my_user }}
+Environment=BACKUP_SRC={{ actual_data_dir }}
+Environment=RCLONE_REMOTE={{ backup_rclone_remote }}
+Environment=RCLONE_DIR={{ backup_rclone_dir }}
+Environment=EMAIL_TO={{ backup_email_to }}
+Environment=RETENTION_DAYS={{ backup_retention_days }}
+ExecStart=/home/{{ my_user }}/bin/backup-actual.sh

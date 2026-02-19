@@ -37,3 +37,11 @@ actual_data_dir: /srv/actual
 # Set pi_ts_hostname to your real *.ts.net hostname in your inventory
 # [rpi:vars] or via --extra-vars at runtime.
 # Do NOT commit your real tailnet name to this public repo.
+
+# --- Actual Budget backup (rclone + systemd timer) ---
+# backup_email_to must be set in your inventory [rpi:vars] section.
+# Do NOT add a default here — the role asserts it is defined.
+backup_rclone_remote: "actual_drive:"
+backup_rclone_dir: "actual-backups"
+backup_schedule: "Sun *-*-* 02:00:00"
+backup_retention_days: 90
