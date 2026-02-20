@@ -28,6 +28,11 @@ pihole_etc_dir: /srv/pihole/etc-pihole
 pihole_dnsmasq_dir: /srv/pihole/etc-dnsmasq.d
 actual_data_dir: /srv/actual
 
+# Pi-hole wildcard-allow domains (uses pihole --allow-wild).
+# Each entry allows the domain itself and all subdomains.
+pihole_whitelist_domains:
+  - google.com
+
 # Pi-hole local DNS: map pi_ts_hostname → pi_lan_ip so LAN clients
 # can reach the Tailscale HTTPS hostname without Tailscale installed.
 # Set pi_lan_ip in your inventory [rpi:vars] (do NOT commit real IPs).

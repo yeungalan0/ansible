@@ -72,6 +72,25 @@
     - compose
     - dns
 
+- name: check current Pi-hole wildcard allow list
+  command: docker exec pihole pihole --allow-wild --list
+  register: pihole_allow_wild_current
+  changed_when: false
+  when: pihole_whitelist_domains | default([]) | length > 0
+  tags:
+    - compose
+    - whitelist
+
+- name: add Pi-hole wildcard allow entries
+  command: "docker exec pihole pihole --allow-wild {{ item }}"
+  loop: "{{ pihole_whitelist_domains | default([]) }}"
+  when:
+    - pihole_whitelist_domains | default([]) | length > 0
+    - item not in (pihole_allow_wild_current.stdout | default(''))
+  tags:
+    - compose
+    - whitelist
+
 - name: enable and start Docker Compose service
   systemd:
     name: docker-compose-srv
